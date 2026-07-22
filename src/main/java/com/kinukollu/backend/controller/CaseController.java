@@ -1,5 +1,6 @@
 package com.kinukollu.backend.controller;
 
+import com.kinukollu.backend.dto.CaseResponse;
 import com.kinukollu.backend.dto.CreateCaseRequest;
 import com.kinukollu.backend.entity.Case;
 import com.kinukollu.backend.entity.KnowledgeSource;
@@ -59,7 +60,7 @@ public class CaseController {
         newCase.setSummary(request.getQuery());
 
         Case saved = caseRepository.save(newCase);
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.ok(new CaseResponse(saved));
     }
 
     @GetMapping
@@ -69,7 +70,10 @@ public class CaseController {
             return ResponseEntity.notFound().build();
         }
 
-        List<Case> cases = caseRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+        List<CaseResponse> cases = caseRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
+                .stream()
+                .map(CaseResponse::new)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(cases);
     }
 
@@ -85,7 +89,6 @@ public class CaseController {
             return ResponseEntity.notFound().build();
         }
 
-        // Map case type to a knowledge category, retrieve relevant grounding content
         String category = existingCase.getCaseType().equals("SCHEME_MATCH") ? "SCHEME" : "RIGHTS";
         List<KnowledgeSource> relevantKnowledge = knowledgeSourceRepository.findByCategory(category);
 
