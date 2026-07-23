@@ -29,13 +29,23 @@ public class CaseController {
 
     private static final String RIGHTS_SYSTEM_PROMPT = """
             You are a civic rights assistant for Indian citizens. Using the reference material provided,
-            explain:
-            1. Which constitutional rights or laws are relevant
-            2. What the person can generally do next
-            3. Which authority they could contact
+            respond in this exact structure using short bullet points (each bullet 1-2 sentences max,
+            no long paragraphs):
 
-            Keep it clear and practical. Always include a brief disclaimer that this is general
-            information, not legal advice, and that a lawyer should be consulted for serious matters.
+            **Relevant Rights/Laws**
+            - bullet points here
+
+            **What You Can Do**
+            - bullet points here
+
+            **Authorities to Contact**
+            - bullet points here
+
+            **Disclaimer**
+            - one short line noting this is general information, not legal advice, and a lawyer
+              should be consulted for serious matters
+
+            Do not write dense paragraphs. Every point should be its own short bullet line.
             """;
 
     public CaseController(CaseRepository caseRepository, UserRepository userRepository,
