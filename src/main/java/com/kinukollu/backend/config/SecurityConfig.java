@@ -1,6 +1,7 @@
 package com.kinukollu.backend.config;
 
 import com.kinukollu.backend.security.JwtAuthFilter;
+import com.kinukollu.backend.config.RateLimitFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,11 +17,13 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final RateLimitFilter rateLimitFilter;
     private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, CorsConfigurationSource corsConfigurationSource) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, CorsConfigurationSource corsConfigurationSource, RateLimitFilter rateLimitFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.corsConfigurationSource = corsConfigurationSource;
+        this.rateLimitFilter = rateLimitFilter;
     }
 
     @Bean
@@ -39,6 +42,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**", "/error").permitAll()
                 .anyRequest().authenticated()
             )
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
