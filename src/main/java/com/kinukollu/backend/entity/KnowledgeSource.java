@@ -30,6 +30,9 @@ public class KnowledgeSource {
     @Column(nullable = false)
     private Integer version = 1;
 
+    @Column(columnDefinition = "TEXT")
+    private String embedding;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -60,6 +63,9 @@ public class KnowledgeSource {
 
     public Integer getVersion() { return version; }
     public void setVersion(Integer version) { this.version = version; }
+
+    public String getEmbedding() { return embedding; }
+    public void setEmbedding(String embedding) { this.embedding = embedding; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
 

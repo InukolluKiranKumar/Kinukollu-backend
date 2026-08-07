@@ -117,7 +117,22 @@ public class CaseController {
         }
 
         String category = existingCase.getCaseType().equals("SCHEME_MATCH") ? "SCHEME" : "RIGHTS";
-        List<KnowledgeSource> relevantKnowledge = knowledgeSourceRepository.findByCategory(category);
+        List<KnowledgeSource> allInCategory = knowledgeSourceRepository.findByCategory(category);
+
+        List<KnowledgeSource> relevantKnowledge;
+        try {
+            float[] queryEmbedding = aiService.generateEmbedding(existingCase.getSummary());
+            relevantKnowledge = allInCategory.stream()
+                    .sorted((a, b) -> {
+                        double simA = aiService.cosineSimilarity(queryEmbedding, aiService.stringToEmbedding(a.getEmbedding()));
+                        double simB = aiService.cosineSimilarity(queryEmbedding, aiService.stringToEmbedding(b.getEmbedding()));
+                        return Double.compare(simB, simA);
+                    })
+                    .limit(5)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            relevantKnowledge = allInCategory;
+        }
 
         String knowledgeContext = relevantKnowledge.stream()
                 .map(k -> "- " + k.getTitle() + ": " + k.getContent() +

@@ -3,6 +3,7 @@ package com.kinukollu.backend.controller;
 import com.kinukollu.backend.dto.CreateKnowledgeRequest;
 import com.kinukollu.backend.entity.KnowledgeSource;
 import com.kinukollu.backend.repository.KnowledgeSourceRepository;
+import com.kinukollu.backend.service.AiService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +15,11 @@ import java.util.List;
 public class KnowledgeController {
 
     private final KnowledgeSourceRepository knowledgeSourceRepository;
+    private final AiService aiService;
 
-    public KnowledgeController(KnowledgeSourceRepository knowledgeSourceRepository) {
+    public KnowledgeController(KnowledgeSourceRepository knowledgeSourceRepository, AiService aiService) {
         this.knowledgeSourceRepository = knowledgeSourceRepository;
+        this.aiService = aiService;
     }
 
     @PostMapping
@@ -28,6 +31,13 @@ public class KnowledgeController {
         entry.setApplicableState(request.getApplicableState());
         entry.setEligibilityCriteria(request.getEligibilityCriteria());
         entry.setSourceReference(request.getSourceReference());
+
+        try {
+            float[] embedding = aiService.generateEmbedding(request.getContent());
+            entry.setEmbedding(aiService.embeddingToString(embedding));
+        } catch (Exception e) {
+            entry.setEmbedding(null);
+        }
 
         KnowledgeSource saved = knowledgeSourceRepository.save(entry);
         return ResponseEntity.ok(saved);
