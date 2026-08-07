@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/knowledge")
@@ -53,5 +54,24 @@ public class KnowledgeController {
     public ResponseEntity<?> getByCategory(@PathVariable String category) {
         List<KnowledgeSource> results = knowledgeSourceRepository.findByCategory(category);
         return ResponseEntity.ok(results);
+    }
+
+    @PostMapping("/backfill-embeddings")
+    public ResponseEntity<?> backfillEmbeddings() {
+        List<KnowledgeSource> all = knowledgeSourceRepository.findAll();
+        int updated = 0;
+        for (KnowledgeSource entry : all) {
+            if (entry.getEmbedding() == null || entry.getEmbedding().isBlank()) {
+                try {
+                    float[] embedding = aiService.generateEmbedding(entry.getContent());
+                    entry.setEmbedding(aiService.embeddingToString(embedding));
+                    knowledgeSourceRepository.save(entry);
+                    updated++;
+                } catch (Exception e) {
+                    // skip entries that fail, continue with the rest
+                }
+            }
+        }
+        return ResponseEntity.ok(Map.of("totalEntries", all.size(), "updated", updated));
     }
 }
